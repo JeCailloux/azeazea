@@ -19,15 +19,14 @@ public class Main {
      *   java -jar target/ocr-simple-1.0-jar-with-dependencies.jar C:\Users\basti\Desktop\ticket-de-caisse.png
      */
     public static void main(String[] args) {
-        // ----- Console UTF-8 (accents) -----
+
         try {
             System.setOut(new PrintStream(new java.io.FileOutputStream(FileDescriptor.out), true, "UTF-8"));
             System.setErr(new PrintStream(new java.io.FileOutputStream(FileDescriptor.err), true, "UTF-8"));
         } catch (Exception ignore) {}
 
-        // ----- Args -----
+
         if (args.length != 1) {
-            System.err.println("Usage: java -jar target/ocr-simple-1.0-jar-with-dependencies.jar C:\\Users\\basti\\Desktop\\ticket-de-caisse.png");
             System.exit(1);
         }
 
@@ -46,22 +45,19 @@ public class Main {
         }
 
         try {
-            // ----- Lecture -----
+            //Lecture
             BufferedImage img = ImageIO.read(input);
             if (img == null) {
                 System.err.println("Erreur: l'image n'a pas pu être lue (format invalide ou fichier corrompu). Chemin: " + input.getAbsolutePath());
                 System.exit(2);
             }
 
-            // ----- Prétraitements (tickets de caisse) -----
-            // Pass A : grayscale + upscale x2 + unsharp (souvent meilleur pour LSTM)
+            //Prétraitements
             BufferedImage passA = ImagePreprocessor.receiptPassA(img);
-            // Pass B : A + contraste + Sauvola (filet de sécurité si fond gris/bruité)
             BufferedImage passB = ImagePreprocessor.receiptPassB(img);
 
-            // ----- OCR -----
-            // Ne PAS dépendre de -Dtessdata : OcrService gère automatiquement le tessdata embarqué
-            OcrService ocr = new OcrService(System.getProperty("tessdata")); // ok si null
+            //OCR
+            OcrService ocr = new OcrService(System.getProperty("tessdata"));
 
             ResultModel rA = ocr.run(passA);
             ResultModel rB = ocr.run(passB);
@@ -69,7 +65,7 @@ public class Main {
             // Choisir la meilleure passe selon la confiance
             ResultModel result = (rB.getConfidence() > rA.getConfidence()) ? rB : rA;
 
-            // ----- Sorties -----
+            //orties
             System.out.println("===== TEXTE OCR =====");
             System.out.println(result.getText());
             System.out.printf("%nConfiance PassA (gray): %.1f%% | PassB (bin): %.1f%%%n", rA.getConfidence(), rB.getConfidence());

@@ -2,7 +2,6 @@ package org.example;
 
 public class ResultModel {
     private String text;
-    /** Confiance moyenne globale, en pourcentage (0..100). */
     private double confidence;
 
     public ResultModel() {}

@@ -7,30 +7,25 @@ import java.awt.image.RescaleOp;
 
 public class ImagePreprocessor {
 
-    // === EXISTANT ===
+
     public static BufferedImage preprocess(BufferedImage src) {
-        // Peut rester pour d’autres usages, mais pour les tickets on utilisera les méthodes ci-dessous.
         BufferedImage gray = toGrayscale(src);
         BufferedImage contrast = boostContrast(gray, 1.15f, -8f);
         return binarizeOtsu(contrast);
     }
 
-    // === NOUVEAU : pipeline tickets ===
-    /** Pass A : upscale -> grayscale -> unsharp (pas de binarisation) */
     public static BufferedImage receiptPassA(BufferedImage src) {
         BufferedImage g = toGrayscale(src);
         BufferedImage up = upscale2x(g);
         return unsharp(up);
     }
 
-    /** Pass B : pass A + contraste + seuillage adaptatif Sauvola */
     public static BufferedImage receiptPassB(BufferedImage src) {
         BufferedImage a = receiptPassA(src);
         BufferedImage boosted = boostContrast(a, 1.2f, -10f);
         return sauvola(boosted, 31, 0.34); // fenêtre ~31, k ~ 0.34
     }
 
-    // === Outils ===
     public static BufferedImage toGrayscale(BufferedImage src) {
         int w = src.getWidth(), h = src.getHeight();
         BufferedImage gray = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
@@ -69,7 +64,6 @@ public class ImagePreprocessor {
         return dst;
     }
 
-    // Otsu (déjà présent chez toi)
     public static BufferedImage binarizeOtsu(BufferedImage gray) {
         int w = gray.getWidth(), h = gray.getHeight();
         int[] hist = new int[256];
@@ -92,7 +86,6 @@ public class ImagePreprocessor {
         return out;
     }
 
-    // Sauvola simple (adaptatif) – très utile quand le fond n’est pas blanc pur
     public static BufferedImage sauvola(BufferedImage gray, int window, double k) {
         int w = gray.getWidth(), h = gray.getHeight();
         BufferedImage out = new BufferedImage(w,h,BufferedImage.TYPE_BYTE_BINARY);
